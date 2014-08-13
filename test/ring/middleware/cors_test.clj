@@ -37,8 +37,8 @@
 
 (defn handler [request]
   ((wrap-cors (fn [_] {})
-              :access-control-allow-origin #"http://example.com"
-              :access-control-allow-methods [:get :put :post])
+              (constant-access-map :access-control-allow-origin #"http://example.com"
+              :access-control-allow-methods [:get :put :post]))
    request))
 
 (deftest test-preflight
@@ -72,7 +72,7 @@
 
 (deftest test-no-cors-header-when-handler-returns-nil
   (is (nil? ((wrap-cors (fn [_] nil)
-                        :access-control-allow-origin #".*example.com")
+                        (constant-access-map :access-control-allow-origin #".*example.com"))
              {:request-method
               :get :uri "/"
               :headers {"origin" "http://example.com"}}))))
@@ -80,14 +80,14 @@
 (deftest test-options-without-cors-header
   (is (nil? ((wrap-cors
               (fn [_] nil)
-              :access-control-allow-origin #".*example.com")
+              (constant-access-map :access-control-allow-origin #".*example.com"))
              {:request-method :options :uri "/"}))))
 
 (deftest test-method-not-allowed
   (is (nil? ((wrap-cors
               (fn [_] nil)
-              :access-control-allow-origin #".*"
-              :access-control-allow-methods [:get :post :patch :put :delete])
+              (constant-access-map :access-control-allow-origin #".*"
+                                   :access-control-allow-methods [:get :post :patch :put :delete]))
              {:request-method :options
               :headers {"origin" "http://foo.com"}
               :uri "/"}))))
